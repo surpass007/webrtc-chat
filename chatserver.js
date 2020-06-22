@@ -29,13 +29,38 @@
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
+let mime={
+  '.js':'application/javascript',
+  '.css':'text/css'
+}
+
+//创建一个函数，req代表客户端，res代表服务器可写流
+let listener=(req,res)=>{
+  //res是可写流，有write和end
+  
+      if(req.url==="/"){
+          //设置编码
+          res.setHeader('Content-Type','text/html;charset=utf-8');
+          fs.createReadStream('index.html').pipe(res);
+      }else{
+          if(fs.existsSync(`.${req.url}`)) {
+              res.setHeader('Content-Type',mime[req.url.match(/\.\w+$/)[0]] +';charset=utf-8');
+              fs.createReadStream(`.${req.url}`).pipe(res);
+          }else{
+              res.statusCode=404;
+                  res.end();
+          }
+      }
+  
+  }
+
 var WebSocketServer = require('websocket').server;
 
 // Pathnames of the SSL key and certificate files to use for
 // HTTPS connections.
 
-const keyFilePath = "/etc/pki/tls/private/mdn-samples.mozilla.org.key";
-const certFilePath = "/etc/pki/tls/certs/mdn-samples.mozilla.org.crt";
+const keyFilePath = "onehuiyi_com_key.txt";
+const certFilePath = "onehuiyi.com.crt";
 
 // Used for managing the text chat user list.
 
@@ -168,7 +193,7 @@ var webServer = null;
 
 try {
   if (httpsOptions.key && httpsOptions.cert) {
-    webServer = https.createServer(httpsOptions, handleWebRequest);
+    webServer = https.createServer(httpsOptions, listener);
   }
 } catch(err) {
   webServer = null;
@@ -176,7 +201,7 @@ try {
 
 if (!webServer) {
   try {
-    webServer = http.createServer({}, handleWebRequest);
+    webServer = http.createServer({}, listener);
   } catch(err) {
     webServer = null;
     log(`Error attempting to create HTTP(s) server: ${err.toString()}`);
