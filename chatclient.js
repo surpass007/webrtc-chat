@@ -39,11 +39,7 @@ var clientID = 0;
 
 var mediaConstraints = {
   audio: true,            // We want an audio track
-  video: {
-    aspectRatio: {
-      ideal: 1.333333     // 3:2 aspect is preferred
-    }
-  }
+  video: true
 };
 
 var myUsername = null;
@@ -105,7 +101,7 @@ function connect() {
   if (document.location.protocol === "https:") {
     scheme += "s";
   }
-  serverUrl = scheme + "://" + myHostname + ":6503";
+  serverUrl = scheme + "://" + myHostname + ":443";
 
   log(`Connecting to server: ${serverUrl}`);
   connection = new WebSocket(serverUrl, "json");
@@ -318,6 +314,9 @@ function handleICECandidateEvent(event) {
       target: targetUsername,
       candidate: event.candidate
     });
+  }
+  else {
+    log("onicecandidate() null candidate:", event);
   }
 }
 
